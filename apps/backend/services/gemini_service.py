@@ -12,7 +12,6 @@ nltk.download("punkt")
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 nlp = spacy.load("en_core_web_sm")
 
-weave.init(project_name="text_emotion_analysis")
 
 @weave.op(name="call_gemini")
 def call_gemini(prompt, key):
