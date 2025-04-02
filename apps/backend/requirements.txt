@@ -12,4 +12,4 @@ torchvision
 timm
 uvicorn[standard]
 numpy
-wandb
+weave
