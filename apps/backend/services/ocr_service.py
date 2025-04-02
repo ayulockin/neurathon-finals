@@ -2,6 +2,8 @@ import os
 from google.cloud import documentai
 from dotenv import load_dotenv
 
+import weave
+
 # Load environment variables from the .env file
 load_dotenv()
 
@@ -14,6 +16,7 @@ LOCATION = "us"
 PROCESSOR_ID = "184d92b58818c9cc"
 
 
+@weave.op(name="extract_text_from_jpg")
 def extract_text_from_jpg(image_path):
     client = documentai.DocumentProcessorServiceClient()
     with open(image_path, "rb") as image_file:
