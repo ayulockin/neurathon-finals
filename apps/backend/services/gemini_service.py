@@ -2,7 +2,7 @@ import google.generativeai as genai
 from nltk.tokenize import sent_tokenize
 from models import analysis_models
 import os
-import wandb
+import weave
 import nltk
 import spacy
 
@@ -12,13 +12,16 @@ nltk.download("punkt")
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 nlp = spacy.load("en_core_web_sm")
 
-wandb.init(project="text_emotion_analysis", name="emotion_tracking")
+weave.init(project_name="text_emotion_analysis")
 
+@weave.op(name="call_gemini")
 def call_gemini(prompt, key):
     model = genai.GenerativeModel("gemini-2.0-flash")
     response = model.generate_content(prompt)
     return response.text.strip()
 
+
+@weave.op(name="analyze_sentence")
 def analyze_sentence(sentence, prev_emotion=None):
     emotion_prompt = f"""
     *TASK:* Detect the strongest emotion in the given sentence, considering its tone, punctuation, and prior context.
@@ -41,10 +44,11 @@ def analyze_sentence(sentence, prev_emotion=None):
     """
     
     emotion = call_gemini(emotion_prompt, "") or prev_emotion or "Neutral"
-    wandb.log({"sentence": sentence, "emotion": emotion})
     
     return analysis_models.SentenceAnalysis(sentence=sentence, emotion=emotion)
 
+
+@weave.op(name="analyze_text")
 def analyze_text(text):
     sentences = sent_tokenize(text)
     analyzed_sentences = []
@@ -55,10 +59,9 @@ def analyze_text(text):
         prev_emotion = analysis.emotion
     return analysis_models.TextAnalysisModel(full_text=text, sentences=analyzed_sentences)
 
+
+weave.op(name="split_text_into_sentences")
 def split_text_into_sentences(text):
     doc = nlp(text)
     sentences = [sent.text.strip() for sent in doc.sents]
     return sentences
-
-wandb.finish()
-    
